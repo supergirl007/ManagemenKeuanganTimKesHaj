@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext.tsx';
 import { Kabah4DScene } from '../components/Kabah4DScene.tsx';
-import { Lock, User, LogIn, ShieldAlert, Sparkles, CheckCircle2 } from 'lucide-react';
+import { Lock, User, LogIn, ShieldAlert, Sparkles } from 'lucide-react';
 
 export const LoginPage: React.FC = () => {
   const { login } = useAuth();
@@ -29,11 +29,6 @@ export const LoginPage: React.FC = () => {
     }
   };
 
-  const quickFill = (u: string, p: string) => {
-    setUsername(u);
-    setPassword(p);
-    setErrorMsg(null);
-  };
 
   return (
     <div className="min-h-screen w-full flex items-center justify-center p-4 sm:p-6 bg-gradient-to-br from-purple-950 via-slate-950 to-pink-950 text-slate-100 relative overflow-hidden">
@@ -83,7 +78,7 @@ export const LoginPage: React.FC = () => {
                   type="text"
                   required
                   autoCapitalize="none"
-                  placeholder="Masukkan username (contoh: admin / petugas)"
+                  placeholder="Masukkan username petugas..."
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-black/40 border border-white/15 text-white text-sm focus:border-pink-500 focus:outline-none transition-all placeholder:text-slate-500"
@@ -120,36 +115,6 @@ export const LoginPage: React.FC = () => {
               <span>{loading ? 'Memverifikasi...' : 'Masuk ke Aplikasi'}</span>
             </button>
           </form>
-
-          {/* Quick Demo Fill Buttons */}
-          <div className="mt-5 pt-4 border-t border-white/10">
-            <div className="text-[11px] font-medium text-slate-400 mb-2 text-center">
-              Akses Cepat Pengujian Role (Demo):
-            </div>
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                onClick={() => quickFill('admin', 'admin123')}
-                className="p-2 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/30 text-amber-200 text-xs font-semibold flex flex-col items-center justify-center gap-0.5 transition-all text-center"
-              >
-                <span className="flex items-center gap-1 text-[11px]">
-                  <CheckCircle2 className="w-3 h-3 text-amber-300" /> Admin
-                </span>
-                <span className="text-[10px] text-amber-300/80 font-normal">Full Akses CRUD</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => quickFill('petugas', 'petugas123')}
-                className="p-2 rounded-xl bg-sky-500/15 hover:bg-sky-500/25 border border-sky-500/30 text-sky-200 text-xs font-semibold flex flex-col items-center justify-center gap-0.5 transition-all text-center"
-              >
-                <span className="flex items-center gap-1 text-[11px]">
-                  <CheckCircle2 className="w-3 h-3 text-sky-300" /> Anggota
-                </span>
-                <span className="text-[10px] text-sky-300/80 font-normal">Read-Only View</span>
-              </button>
-            </div>
-          </div>
         </div>
 
         {/* Footer info */}
