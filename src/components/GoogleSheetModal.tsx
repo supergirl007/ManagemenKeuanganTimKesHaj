@@ -201,14 +201,16 @@ export const GoogleSheetModal: React.FC<GoogleSheetModalProps> = ({
     }
   };
 
-  const handleDownloadCsv = (sheetName: 'Users' | 'Saldo' | 'Transaksi') => {
+  const handleDownloadCsv = (sheetName: 'Pengaturan' | 'Users' | 'Saldo' | 'Transaksi') => {
     let content = '';
-    if (sheetName === 'Users') {
-      content = 'id,username,password_hash,role,nama_lengkap,jabatan\r\nusr-1,admin,admin123,admin,"dr. H. Rahmat Hidayat, M.Kes","Ketua Tim Haji"\r\nusr-2,petugas,petugas123,anggota,"Ns. Hj. Siti Nurjanah, S.Kep","Paramedis Kloter"';
+    if (sheetName === 'Pengaturan') {
+      content = 'key,value,keterangan,updated_at\r\nnama_instansi,"UPTD Puskesmas Sehat Nusantara","Nama instansi",2026-05-01T00:00:00.000Z\r\npenanggung_jawab,"dr. H. Rahmat Hidayat, M.Kes","Pimpinan/PJ",2026-05-01T00:00:00.000Z\r\njabatan_penanggung_jawab,"Kepala UPTD Puskesmas","Jabatan penandatangan",2026-05-01T00:00:00.000Z\r\nnip_penanggung_jawab,"19780514 200501 1 008","NIP resmi",2026-05-01T00:00:00.000Z\r\ntahun_aktif,"2026","Tahun anggaran aktif",2026-05-01T00:00:00.000Z';
+    } else if (sheetName === 'Users') {
+      content = 'id,username,password_hash,role,nama_lengkap,jabatan,status,created_at\r\nusr-1,admin,admin123,admin,"dr. H. Rahmat Hidayat, M.Kes","Ketua Tim Haji",aktif,2026-01-01T00:00:00.000Z\r\nusr-2,petugas,petugas123,anggota,"Ns. Hj. Siti Nurjanah, S.Kep","Paramedis Kloter",aktif,2026-01-01T00:00:00.000Z';
     } else if (sheetName === 'Saldo') {
-      content = 'id,tahun,saldo_awal_tahun_lalu,saldo_realtime,catatan,updated_at\r\nsld-2026,1447 H / 2026 M,12500000,28200000,"Sisa kas operasional tahun lalu",2026-05-01T00:00:00.000Z';
+      content = 'id,tahun,saldo_awal_tahun_lalu,saldo_realtime,catatan,is_locked,saldo_akhir_sebelumnya,updated_at\r\nsld-2025,2025,10000000,12500000,"Sisa kas operasional 2024",FALSE,0,2025-12-31T23:59:59.000Z\r\nsld-2026,2026,12500000,28200000,"Carryover saldo akhir 2025",TRUE,12500000,2026-05-01T00:00:00.000Z';
     } else if (sheetName === 'Transaksi') {
-      content = 'id,tanggal,jenis,nominal,sumber_dana,nama_penerima,keterangan,dibuat_oleh,created_at\r\nTRX-2026-001,2026-04-10,penerimaan,15000000,"Dana Operasional Dinkes",,"Pencairan Tahap 1 BOK Haji","Admin Petugas Haji",2026-04-10T08:00:00.000Z\r\nTRX-2026-002,2026-04-18,pengeluaran,4200000,,"PT Kimia Farma Apotek","Pengadaan Obat Emergensi & Vitamin","Admin Petugas Haji",2026-04-18T10:30:00.000Z';
+      content = 'id,tanggal,jenis,nominal,sumber_dana,nama_penerima,keterangan,dibuat_oleh,tahun,created_at\r\nTRX-2026-001,2026-04-10,penerimaan,15000000,"Dana Operasional Dinkes",,"Pencairan Tahap 1 BOK Haji","Admin Petugas Haji",2026,2026-04-10T08:00:00.000Z\r\nTRX-2026-002,2026-04-18,pengeluaran,4200000,,"PT Kimia Farma Apotek","Pengadaan Obat Emergensi & Vitamin","Admin Petugas Haji",2026,2026-04-18T10:30:00.000Z';
     }
     const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
@@ -297,7 +299,7 @@ export const GoogleSheetModal: React.FC<GoogleSheetModalProps> = ({
               activeTab === 'schema' ? 'bg-purple-600 text-white shadow-md' : 'text-slate-400 hover:text-slate-200'
             }`}
           >
-            3 Sheet
+            4 Sheet
           </button>
           <button
             type="button"
@@ -538,19 +540,28 @@ export const GoogleSheetModal: React.FC<GoogleSheetModalProps> = ({
                 )}
               </div>
 
-              {/* CHECKLIST 3 SHEET DOKUMEN */}
+              {/* CHECKLIST 4 SHEET DOKUMEN */}
               <div className="p-3.5 rounded-2xl bg-white/5 border border-white/10 space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="font-bold text-white text-xs flex items-center gap-1.5">
                     <FileSpreadsheet className="w-4 h-4 text-pink-400" />
-                    <span>Status 3 Lembar Kerja Standar:</span>
+                    <span>Status 4 Lembar Kerja Standar:</span>
                   </span>
                   <span className="text-[10px] text-slate-400">Tersinkronisasi Otomatis</span>
                 </div>
 
-                <div className="grid grid-cols-3 gap-2 pt-1">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1">
                   <div className="p-2 rounded-xl bg-black/40 border border-white/10 flex flex-col justify-between">
-                    <span className="font-semibold text-slate-200 text-[11px]">1. Users</span>
+                    <span className="font-semibold text-slate-200 text-[11px]">1. Pengaturan</span>
+                    <span className="text-[10px] text-sky-400 mt-1 font-medium">
+                      {(testResult?.foundExpectedSheets?.pengaturan ?? config?.foundExpectedSheets?.pengaturan)
+                        ? '✓ Terdeteksi'
+                        : 'Siap dibuat'}
+                    </span>
+                  </div>
+
+                  <div className="p-2 rounded-xl bg-black/40 border border-white/10 flex flex-col justify-between">
+                    <span className="font-semibold text-slate-200 text-[11px]">2. Users</span>
                     <span className="text-[10px] text-emerald-400 mt-1 font-medium">
                       {(testResult?.foundExpectedSheets?.users ?? config?.foundExpectedSheets?.users)
                         ? '✓ Terdeteksi'
@@ -559,7 +570,7 @@ export const GoogleSheetModal: React.FC<GoogleSheetModalProps> = ({
                   </div>
 
                   <div className="p-2 rounded-xl bg-black/40 border border-white/10 flex flex-col justify-between">
-                    <span className="font-semibold text-slate-200 text-[11px]">2. Saldo</span>
+                    <span className="font-semibold text-slate-200 text-[11px]">3. Saldo</span>
                     <span className="text-[10px] text-purple-400 mt-1 font-medium">
                       {(testResult?.foundExpectedSheets?.saldo ?? config?.foundExpectedSheets?.saldo)
                         ? '✓ Terdeteksi'
@@ -568,7 +579,7 @@ export const GoogleSheetModal: React.FC<GoogleSheetModalProps> = ({
                   </div>
 
                   <div className="p-2 rounded-xl bg-black/40 border border-white/10 flex flex-col justify-between">
-                    <span className="font-semibold text-slate-200 text-[11px]">3. Transaksi</span>
+                    <span className="font-semibold text-slate-200 text-[11px]">4. Transaksi</span>
                     <span className="text-[10px] text-pink-400 mt-1 font-medium">
                       {(testResult?.foundExpectedSheets?.transaksi ?? config?.foundExpectedSheets?.transaksi)
                         ? '✓ Terdeteksi'
@@ -858,17 +869,17 @@ export const GoogleSheetModal: React.FC<GoogleSheetModalProps> = ({
             </div>
           )}
 
-          {/* TAB 4: SKEMA 3 SHEET */}
+          {/* TAB 4: SKEMA 4 SHEET */}
           {activeTab === 'schema' && (
             <div className="space-y-3">
               <div className="p-3 rounded-2xl bg-gradient-to-r from-purple-900/60 via-pink-900/40 to-purple-900/60 border border-pink-500/40 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
                 <div>
                   <h4 className="text-xs font-bold text-white flex items-center gap-1.5">
                     <Sparkles className="w-3.5 h-3.5 text-pink-400" />
-                    <span>Inisialisasi 3 Sheet & Header Otomatis</span>
+                    <span>Inisialisasi 4 Sheet & Header Otomatis</span>
                   </h4>
                   <p className="text-[10px] text-purple-200/80 mt-0.5">
-                    Membuat lembar kerja dan struktur tabel di Google Spreadsheet tanpa manual.
+                    Membuat lembar kerja dan struktur tabel di Google Spreadsheet tanpa konfigurasi manual.
                   </p>
                 </div>
 
@@ -885,10 +896,43 @@ export const GoogleSheetModal: React.FC<GoogleSheetModalProps> = ({
                 )}
               </div>
 
-              {/* Sheet Users */}
+              {/* Sheet 1: Pengaturan */}
               <div className="p-3 rounded-2xl bg-white/5 border border-white/10 space-y-1.5">
                 <div className="flex items-center justify-between">
-                  <span className="font-bold text-emerald-300">1. Sheet "Users"</span>
+                  <span className="font-bold text-sky-300">1. Sheet "Pengaturan"</span>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => handleDownloadCsv('Pengaturan')}
+                      className="flex items-center gap-1 text-[10px] text-pink-300 hover:text-white px-2 py-0.5 rounded bg-white/5 hover:bg-white/10 cursor-pointer transition-colors"
+                      title="Unduh file CSV siap import ke Google Sheets"
+                    >
+                      <Download className="w-3 h-3" />
+                      <span>Unduh CSV</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleCopy('key,value,keterangan,updated_at', 'pengaturan')}
+                      className="flex items-center gap-1 text-[11px] text-purple-300 hover:text-white cursor-pointer"
+                    >
+                      {copiedText === 'pengaturan' ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                      <span>Salin Header</span>
+                    </button>
+                  </div>
+                </div>
+                <p className="text-[11px] text-slate-300">
+                  Kolom: <code>key, value, keterangan, updated_at</code>
+                </p>
+                <div className="text-[10px] text-slate-400 bg-black/40 p-2 rounded-xl font-mono overflow-x-auto whitespace-pre">
+                  nama_instansi | UPTD Puskesmas Sehat Nusantara | Nama resmi instansi{'\n'}
+                  penanggung_jawab | dr. H. Rahmat Hidayat, M.Kes | Nama pimpinan / PJ
+                </div>
+              </div>
+
+              {/* Sheet 2: Users */}
+              <div className="p-3 rounded-2xl bg-white/5 border border-white/10 space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <span className="font-bold text-emerald-300">2. Sheet "Users"</span>
                   <div className="flex items-center gap-2">
                     <button
                       type="button"
@@ -901,7 +945,7 @@ export const GoogleSheetModal: React.FC<GoogleSheetModalProps> = ({
                     </button>
                     <button
                       type="button"
-                      onClick={() => handleCopy('id,username,password_hash,role,nama_lengkap,jabatan', 'users')}
+                      onClick={() => handleCopy('id,username,password_hash,role,nama_lengkap,jabatan,status,created_at', 'users')}
                       className="flex items-center gap-1 text-[11px] text-purple-300 hover:text-white cursor-pointer"
                     >
                       {copiedText === 'users' ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
@@ -910,18 +954,18 @@ export const GoogleSheetModal: React.FC<GoogleSheetModalProps> = ({
                   </div>
                 </div>
                 <p className="text-[11px] text-slate-300">
-                  Kolom: <code>id, username, password_hash, role, nama_lengkap, jabatan</code>
+                  Kolom: <code>id, username, password_hash, role, nama_lengkap, jabatan, status, created_at</code>
                 </p>
                 <div className="text-[10px] text-slate-400 bg-black/40 p-2 rounded-xl font-mono overflow-x-auto whitespace-pre">
-                  usr-1 | admin | admin123 | admin | dr. H. Rahmat Hidayat | Ketua Tim Haji{'\n'}
-                  usr-2 | petugas | petugas123 | anggota | Ns. Hj. Siti Nurjanah | Paramedis Kloter
+                  usr-1 | admin | admin123 | admin | dr. H. Rahmat Hidayat | Ketua Tim Haji | aktif{'\n'}
+                  usr-2 | petugas | petugas123 | anggota | Ns. Hj. Siti Nurjanah | Paramedis Kloter | aktif
                 </div>
               </div>
 
-              {/* Sheet Saldo */}
+              {/* Sheet 3: Saldo */}
               <div className="p-3 rounded-2xl bg-white/5 border border-white/10 space-y-1.5">
                 <div className="flex items-center justify-between">
-                  <span className="font-bold text-purple-300">2. Sheet "Saldo"</span>
+                  <span className="font-bold text-purple-300">3. Sheet "Saldo"</span>
                   <div className="flex items-center gap-2">
                     <button
                       type="button"
@@ -934,7 +978,7 @@ export const GoogleSheetModal: React.FC<GoogleSheetModalProps> = ({
                     </button>
                     <button
                       type="button"
-                      onClick={() => handleCopy('id,tahun,saldo_awal_tahun_lalu,saldo_realtime,catatan,updated_at', 'saldo')}
+                      onClick={() => handleCopy('id,tahun,saldo_awal_tahun_lalu,saldo_realtime,catatan,is_locked,saldo_akhir_sebelumnya,updated_at', 'saldo')}
                       className="flex items-center gap-1 text-[11px] text-purple-300 hover:text-white cursor-pointer"
                     >
                       {copiedText === 'saldo' ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
@@ -943,17 +987,18 @@ export const GoogleSheetModal: React.FC<GoogleSheetModalProps> = ({
                   </div>
                 </div>
                 <p className="text-[11px] text-slate-300">
-                  Kolom: <code>id, tahun, saldo_awal_tahun_lalu, saldo_realtime, catatan, updated_at</code>
+                  Kolom: <code>id, tahun, saldo_awal_tahun_lalu, saldo_realtime, catatan, is_locked, saldo_akhir_sebelumnya, updated_at</code>
                 </p>
                 <div className="text-[10px] text-slate-400 bg-black/40 p-2 rounded-xl font-mono overflow-x-auto whitespace-pre">
-                  sld-2026 | 1447 H / 2026 M | 12500000 | 12500000 | Sisa kas operasional tahun lalu
+                  sld-2025 | 2025 | 10000000 | 12500000 | Sisa kas operasional 2024 | FALSE | 0{'\n'}
+                  sld-2026 | 2026 | 12500000 | 28200000 | Carryover saldo akhir 2025 | TRUE | 12500000
                 </div>
               </div>
 
-              {/* Sheet Transaksi */}
+              {/* Sheet 4: Transaksi */}
               <div className="p-3 rounded-2xl bg-white/5 border border-white/10 space-y-1.5">
                 <div className="flex items-center justify-between">
-                  <span className="font-bold text-pink-300">3. Sheet "Transaksi"</span>
+                  <span className="font-bold text-pink-300">4. Sheet "Transaksi"</span>
                   <div className="flex items-center gap-2">
                     <button
                       type="button"
@@ -968,7 +1013,7 @@ export const GoogleSheetModal: React.FC<GoogleSheetModalProps> = ({
                       type="button"
                       onClick={() =>
                         handleCopy(
-                          'id,tanggal,jenis,nominal,sumber_dana,nama_penerima,keterangan,dibuat_oleh,created_at',
+                          'id,tanggal,jenis,nominal,sumber_dana,nama_penerima,keterangan,dibuat_oleh,tahun,created_at',
                           'trx'
                         )
                       }
@@ -980,11 +1025,10 @@ export const GoogleSheetModal: React.FC<GoogleSheetModalProps> = ({
                   </div>
                 </div>
                 <p className="text-[11px] text-slate-300">
-                  Kolom: <code>id, tanggal, jenis, nominal, sumber_dana, nama_penerima, keterangan, dibuat_oleh, created_at</code>
+                  Kolom: <code>id, tanggal, jenis, nominal, sumber_dana, nama_penerima, keterangan, dibuat_oleh, tahun, created_at</code>
                 </p>
                 <div className="text-[10px] text-slate-400 bg-black/40 p-2 rounded-xl font-mono overflow-x-auto whitespace-pre">
-                  TRX-2026-001 | 2026-04-10 | penerimaan | 15000000 | Dana Dinkes | | Pencairan BOK Haji{'\n'}
-                  TRX-2026-002 | 2026-04-18 | pengeluaran | 4200000 | | PT Kimia Farma | Beli Obat Emergensi
+                  TRX-2026-001 | 2026-04-10 | penerimaan | 15000000 | Dana BOK | | Pencairan Tahap 1 | Admin | 2026
                 </div>
               </div>
             </div>

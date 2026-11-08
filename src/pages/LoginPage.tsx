@@ -1,14 +1,36 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext.tsx';
 import { Kabah4DScene } from '../components/Kabah4DScene.tsx';
-import { Lock, User, LogIn, ShieldAlert, Sparkles } from 'lucide-react';
+import { api } from '../utils/api.ts';
+import { Lock, User, LogIn, ShieldAlert, Sparkles, Calendar, ChevronDown, Check } from 'lucide-react';
 
 export const LoginPage: React.FC = () => {
-  const { login } = useAuth();
+  const { login, activeYear } = useAuth();
   const [username, setUsername] = useState<string>('');
   const [password, setPassword] = useState<string>('');
+  const [selectedYear, setSelectedYear] = useState<string>(activeYear || '2026');
+  const [availableYears, setAvailableYears] = useState<string[]>(['2026', '2025']);
+  const [isCustomYear, setIsCustomYear] = useState<boolean>(false);
+  const [customYearInput, setCustomYearInput] = useState<string>('');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
+
+  useEffect(() => {
+    // Muat daftar tahun database yang tersedia
+    api
+      .getYears()
+      .then((res) => {
+        if (res.years && res.years.length > 0) {
+          setAvailableYears(res.years);
+          if (res.activeYear) {
+            setSelectedYear(res.activeYear);
+          }
+        }
+      })
+      .catch(() => {
+        // Abaikan jika server offline / demo
+      });
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -19,16 +41,17 @@ export const LoginPage: React.FC = () => {
       return;
     }
 
+    const yearToUse = isCustomYear && customYearInput.trim() ? customYearInput.trim() : selectedYear;
+
     try {
       setLoading(true);
-      await login(username.trim(), password);
+      await login(username.trim(), password, yearToUse);
     } catch (err: any) {
       setErrorMsg(err.message || 'Login gagal. Periksa kembali akun Anda.');
     } finally {
       setLoading(false);
     }
   };
-
 
   return (
     <div className="min-h-screen w-full flex items-center justify-center p-4 sm:p-6 bg-gradient-to-br from-purple-950 via-slate-950 to-pink-950 text-slate-100 relative overflow-hidden">
@@ -53,7 +76,7 @@ export const LoginPage: React.FC = () => {
               Tim Petugas Haji Puskesmas
             </h2>
             <p className="text-xs text-purple-200/80 mt-1">
-              Manajemen kas operasional medis & logistik jamaah haji 1447 H / 2026 M
+              Manajemen kas operasional medis & logistik jamaah haji
             </p>
           </div>
 
@@ -64,7 +87,8 @@ export const LoginPage: React.FC = () => {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-3.5">
+            {/* Field 1: Username */}
             <div>
               <label htmlFor="login-username" className="block text-xs font-semibold text-purple-200 mb-1.5">
                 Username Petugas
@@ -86,6 +110,7 @@ export const LoginPage: React.FC = () => {
               </div>
             </div>
 
+            {/* Field 2: Password */}
             <div>
               <label htmlFor="login-password" className="block text-xs font-semibold text-purple-200 mb-1.5">
                 Kata Sandi
@@ -106,13 +131,65 @@ export const LoginPage: React.FC = () => {
               </div>
             </div>
 
+            {/* Field 3: Database Year Selection */}
+            <div>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="text-xs font-semibold text-purple-200 flex items-center gap-1.5">
+                  <Calendar className="w-3.5 h-3.5 text-pink-400" />
+                  <span>Tahun Database Anggaran</span>
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setIsCustomYear(!isCustomYear)}
+                  className="text-[10px] text-pink-300 hover:text-white underline cursor-pointer"
+                >
+                  {isCustomYear ? 'Pilih dari Database' : '+ Tahun Baru'}
+                </button>
+              </div>
+
+              {isCustomYear ? (
+                <input
+                  type="text"
+                  required
+                  placeholder="Ketik tahun (contoh: 2027)"
+                  value={customYearInput}
+                  onChange={(e) => setCustomYearInput(e.target.value)}
+                  className="w-full px-3 py-2.5 rounded-xl bg-black/40 border border-pink-500/50 text-white font-mono text-sm focus:border-pink-500 focus:outline-none"
+                />
+              ) : (
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
+                  {availableYears.map((yr) => {
+                    const isSelected = selectedYear === yr;
+                    return (
+                      <button
+                        key={yr}
+                        type="button"
+                        onClick={() => setSelectedYear(yr)}
+                        className={`py-2 px-2.5 rounded-xl border text-xs font-mono font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                          isSelected
+                            ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white border-pink-400 shadow-md shadow-pink-500/20'
+                            : 'bg-black/30 border-white/10 text-slate-300 hover:border-white/30 hover:text-white'
+                        }`}
+                      >
+                        {isSelected && <Check className="w-3 h-3 text-pink-200" />}
+                        <span>Tahun {yr}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+              <span className="text-[10px] text-purple-200/60 mt-1 block">
+                Semua data kas dan transaksi akan difilter sesuai tahun yang Anda pilih.
+              </span>
+            </div>
+
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 rounded-xl bg-gradient-to-r from-purple-600 via-fuchsia-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-bold text-sm shadow-xl shadow-pink-600/30 flex items-center justify-center gap-2 active:scale-98 transition-all cursor-pointer mt-2"
+              className="w-full py-3 rounded-xl bg-gradient-to-r from-purple-600 via-fuchsia-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-bold text-sm shadow-xl shadow-pink-600/30 flex items-center justify-center gap-2 active:scale-98 transition-all cursor-pointer mt-4"
             >
               <LogIn className="w-4 h-4" />
-              <span>{loading ? 'Memverifikasi...' : 'Masuk ke Aplikasi'}</span>
+              <span>{loading ? 'Memverifikasi Akun...' : 'Masuk ke Aplikasi'}</span>
             </button>
           </form>
         </div>

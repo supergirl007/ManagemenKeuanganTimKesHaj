@@ -10,6 +10,7 @@ import { DashboardPage } from './pages/DashboardPage.tsx';
 import { PenerimaanPage } from './pages/PenerimaanPage.tsx';
 import { PengeluaranPage } from './pages/PengeluaranPage.tsx';
 import { LaporanPage } from './pages/LaporanPage.tsx';
+import { PengaturanPage } from './pages/PengaturanPage.tsx';
 import { Navbar } from './components/Navbar.tsx';
 import { BottomNav, NavTab } from './components/BottomNav.tsx';
 import { TransactionModal } from './components/TransactionModal.tsx';
@@ -17,17 +18,28 @@ import { SaldoModal } from './components/SaldoModal.tsx';
 import { GoogleSheetModal } from './components/GoogleSheetModal.tsx';
 import { ExportPdfModal } from './components/ExportPdfModal.tsx';
 import { api } from './utils/api.ts';
-import { Transaction, SaldoRecord, GoogleSheetsConfig, TransactionType } from './types/index.ts';
+import { Transaction, SaldoRecord, GoogleSheetsConfig, TransactionType, AppConfig } from './types/index.ts';
 import { CheckCircle2, AlertTriangle, Loader2 } from 'lucide-react';
 
 function MainAppShell() {
-  const { user, isAdmin, isLoading: authLoading } = useAuth();
+  const { user, isAdmin, isLoading: authLoading, activeYear, setActiveYear } = useAuth();
   const [currentTab, setCurrentTab] = useState<NavTab>('dashboard');
 
-  // App Data State
+  // Application Configuration (Nama Instansi, PJ, NIP)
+  const [appConfig, setAppConfig] = useState<AppConfig>({
+    nama_instansi: 'UPTD Puskesmas',
+    penanggung_jawab: 'dr. H. Rahmat Hidayat, M.Kes',
+    jabatan_penanggung_jawab: 'Kepala UPTD Puskesmas',
+    nip_penanggung_jawab: '19780514 200501 1 008',
+    tahun_aktif: activeYear || '2026',
+  });
+
+  const [availableYears, setAvailableYears] = useState<string[]>([activeYear || '2026']);
+
+  // App Data State (Filtered strictly by activeYear)
   const [saldo, setSaldo] = useState<SaldoRecord>({
-    id: 'sld-2026',
-    tahun: '1447 H / 2026 M',
+    id: `sld-${activeYear}`,
+    tahun: activeYear,
     saldo_awal_tahun_lalu: 12500000,
     saldo_realtime: 12500000,
   });
@@ -54,30 +66,45 @@ function MainAppShell() {
     }, 3500);
   };
 
-  const loadAllData = useCallback(async () => {
+  const loadAllData = useCallback(async (targetYear?: string) => {
+    const yr = targetYear || activeYear;
     try {
       setLoadingData(true);
       await api.syncSheets().catch(() => null);
-      const [saldoData, trxList, sheetsStatus] = await Promise.all([
-        api.getSaldo(),
-        api.getTransactions(),
+      const [saldoData, trxList, sheetsStatus, configData, yearsData] = await Promise.all([
+        api.getSaldo(yr),
+        api.getTransactions(yr),
         api.getSheetsStatus(),
+        api.getAppConfig().catch(() => null),
+        api.getYears().catch(() => null),
       ]);
       setSaldo(saldoData);
       setTransactions(trxList);
       setSheetConfig(sheetsStatus);
+      if (configData) setAppConfig(configData);
+      if (yearsData?.years && yearsData.years.length > 0) {
+        setAvailableYears(yearsData.years);
+      }
     } catch (err: any) {
       console.warn('Initial data load notice:', err.message);
     } finally {
       setLoadingData(false);
     }
-  }, []);
+  }, [activeYear]);
 
   useEffect(() => {
     if (user) {
       loadAllData();
     }
-  }, [user, loadAllData]);
+  }, [user, activeYear, loadAllData]);
+
+  // Handlers for switching year
+  const handleYearChanged = async (newYear: string) => {
+    setActiveYear(newYear);
+    api.setStoredActiveYear(newYear);
+    showToast(`Beralih ke tahun database ${newYear}`);
+    await loadAllData(newYear);
+  };
 
   // Handlers for transactions
   const handleOpenAddModal = (type: TransactionType = 'penerimaan') => {
@@ -94,16 +121,22 @@ function MainAppShell() {
 
   const handleSaveTransaction = async (data: Omit<Transaction, 'id' | 'created_at'>) => {
     if (editingTrx) {
-      const updated = await api.updateTransaction(editingTrx.id, data);
+      const updated = await api.updateTransaction(editingTrx.id, {
+        ...data,
+        tahun: editingTrx.tahun || activeYear,
+      });
       setTransactions((prev) => prev.map((t) => (t.id === updated.id ? updated : t)));
       showToast('Transaksi berhasil diperbarui!');
     } else {
-      const created = await api.createTransaction(data);
+      const created = await api.createTransaction({
+        ...data,
+        tahun: activeYear,
+      });
       setTransactions((prev) => [created, ...prev]);
       showToast('Transaksi baru berhasil dicatat!');
     }
-    // Refresh balance from server
-    const updatedSaldo = await api.getSaldo();
+    // Refresh balance for activeYear from server
+    const updatedSaldo = await api.getSaldo(activeYear);
     setSaldo(updatedSaldo);
   };
 
@@ -111,7 +144,7 @@ function MainAppShell() {
     await api.deleteTransaction(id);
     setTransactions((prev) => prev.filter((t) => t.id !== id));
     showToast('Transaksi berhasil dihapus.');
-    const updatedSaldo = await api.getSaldo();
+    const updatedSaldo = await api.getSaldo(activeYear);
     setSaldo(updatedSaldo);
   };
 
@@ -120,9 +153,12 @@ function MainAppShell() {
     tahun?: string;
     catatan?: string;
   }) => {
-    const updated = await api.updateSaldo(payload);
+    const updated = await api.updateSaldo({
+      ...payload,
+      tahun: payload.tahun || activeYear,
+    });
     setSaldo(updated);
-    showToast('Saldo awal tahun lalu berhasil disimpan!');
+    showToast(`Saldo awal kas tahun ${payload.tahun || activeYear} berhasil disimpan!`);
   };
 
   if (authLoading) {
@@ -161,6 +197,12 @@ function MainAppShell() {
       {/* Top Navbar */}
       <Navbar
         sheetConfig={sheetConfig}
+        appConfig={appConfig}
+        activeYear={activeYear}
+        availableYears={availableYears}
+        currentTab={currentTab}
+        onYearChanged={handleYearChanged}
+        onNavigateTab={(tab) => setCurrentTab(tab)}
         onOpenSheetModal={() => setIsSheetModalOpen(true)}
       />
 
@@ -169,7 +211,7 @@ function MainAppShell() {
         {loadingData ? (
           <div className="py-20 flex flex-col items-center justify-center gap-2 text-xs text-purple-300">
             <Loader2 className="w-6 h-6 animate-spin text-pink-400" />
-            <span>Menyinkronkan data keuangan...</span>
+            <span>Menyinkronkan data keuangan tahun {activeYear}...</span>
           </div>
         ) : (
           <>
@@ -211,7 +253,21 @@ function MainAppShell() {
                 saldo={saldo}
                 transactions={transactions}
                 user={user}
+                appConfig={appConfig}
                 onOpenExportModal={() => setIsExportModalOpen(true)}
+              />
+            )}
+
+            {currentTab === 'pengaturan' && isAdmin && (
+              <PengaturanPage
+                currentUser={user}
+                isAdmin={isAdmin}
+                appConfig={appConfig}
+                activeYear={activeYear}
+                onUpdateAppConfig={(cfg) => setAppConfig(cfg)}
+                onYearChanged={handleYearChanged}
+                onDataRefresh={() => loadAllData(activeYear)}
+                showToast={showToast}
               />
             )}
           </>
@@ -247,7 +303,7 @@ function MainAppShell() {
         onClose={() => setIsSheetModalOpen(false)}
         config={sheetConfig}
         isAdmin={isAdmin}
-        onConfigUpdated={loadAllData}
+        onConfigUpdated={() => loadAllData(activeYear)}
       />
 
       <ExportPdfModal
@@ -256,6 +312,7 @@ function MainAppShell() {
         transactions={transactions}
         saldo={saldo}
         currentUser={user}
+        appConfig={appConfig}
       />
     </div>
   );

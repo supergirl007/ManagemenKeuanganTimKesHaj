@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Transaction, SaldoRecord, AuthUser } from '../types/index.ts';
+import { Transaction, SaldoRecord, AuthUser, AppConfig } from '../types/index.ts';
 import { formatRupiah, calculateFinancialSummary } from '../utils/finance.ts';
 import { generateFinancialPdfReport } from '../utils/pdfExport.ts';
 import { X, FileDown, FileCheck, CheckCircle2 } from 'lucide-react';
@@ -10,6 +10,7 @@ interface ExportPdfModalProps {
   transactions: Transaction[];
   saldo: SaldoRecord;
   currentUser: AuthUser;
+  appConfig?: AppConfig | null;
 }
 
 export const ExportPdfModal: React.FC<ExportPdfModalProps> = ({
@@ -18,6 +19,7 @@ export const ExportPdfModal: React.FC<ExportPdfModalProps> = ({
   transactions,
   saldo,
   currentUser,
+  appConfig,
 }) => {
   const [selectedMonth, setSelectedMonth] = useState<string>('all');
   const [isExporting, setIsExporting] = useState<boolean>(false);
@@ -55,6 +57,7 @@ export const ExportPdfModal: React.FC<ExportPdfModalProps> = ({
         saldo,
         transactions,
         user: currentUser,
+        appConfig: appConfig || undefined,
         periodeTitle: `Laporan Keuangan ${monthLabel}`,
         filterMonth: selectedMonth === 'all' ? undefined : selectedMonth,
       });

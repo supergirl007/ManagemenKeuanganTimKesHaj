@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Transaction, SaldoRecord, AuthUser } from '../types/index.ts';
+import { Transaction, SaldoRecord, AuthUser, AppConfig } from '../types/index.ts';
 import { formatRupiah, formatTanggalIndo, calculateFinancialSummary } from '../utils/finance.ts';
 import {
   FileText,
@@ -15,6 +15,7 @@ interface LaporanPageProps {
   saldo: SaldoRecord;
   transactions: Transaction[];
   user: AuthUser;
+  appConfig?: AppConfig | null;
   onOpenExportModal: () => void;
 }
 
@@ -22,6 +23,7 @@ export const LaporanPage: React.FC<LaporanPageProps> = ({
   saldo,
   transactions,
   user,
+  appConfig,
   onOpenExportModal,
 }) => {
   const [filterMonth, setFilterMonth] = useState<string>('all');
@@ -81,7 +83,7 @@ export const LaporanPage: React.FC<LaporanPageProps> = ({
         <div className="flex items-center justify-between pb-2 border-b border-white/10 text-xs">
           <div className="flex items-center gap-2 text-slate-200 font-semibold">
             <Building className="w-4 h-4 text-purple-400" />
-            <span>Kop Resmi UPTD Puskesmas & Tim Haji</span>
+            <span>Kop Resmi {appConfig?.nama_instansi || 'UPTD Puskesmas'} & Tim Haji</span>
           </div>
           <span className="text-[11px] text-pink-300">
             Tahun Anggaran {saldo.tahun}

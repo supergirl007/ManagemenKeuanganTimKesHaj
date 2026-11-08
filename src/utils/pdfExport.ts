@@ -1,12 +1,13 @@
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { Transaction, SaldoRecord, AuthUser } from '../types/index.ts';
+import { Transaction, SaldoRecord, AuthUser, AppConfig } from '../types/index.ts';
 import { formatRupiah, formatTanggalIndo, calculateFinancialSummary } from './finance.ts';
 
 export interface ExportPdfOptions {
   saldo: SaldoRecord;
   transactions: Transaction[];
   user: AuthUser;
+  appConfig?: AppConfig;
   periodeTitle?: string;
   filterMonth?: string;
 }
@@ -15,6 +16,7 @@ export function generateFinancialPdfReport({
   saldo,
   transactions,
   user,
+  appConfig,
   periodeTitle,
   filterMonth,
 }: ExportPdfOptions): void {
@@ -49,7 +51,8 @@ export function generateFinancialPdfReport({
 
   doc.setFontSize(15);
   doc.setTextColor(112, 26, 117); // Purple accent
-  doc.text('UNIT PELAKSANA TEKNIS PUSKESMAS', pageWidth / 2, 23, { align: 'center' });
+  const instansiText = appConfig?.nama_instansi ? appConfig.nama_instansi.toUpperCase() : 'UNIT PELAKSANA TEKNIS PUSKESMAS';
+  doc.text(instansiText, pageWidth / 2, 23, { align: 'center' });
 
   doc.setFontSize(11);
   doc.setTextColor(51, 65, 85);
@@ -272,8 +275,8 @@ export function generateFinancialPdfReport({
   const rightSignX = pageWidth - 65;
 
   doc.text(`Mengetahui,`, leftSignX, signY, { align: 'center' });
-  doc.text(`Ketua Tim Kesehatan Haji`, leftSignX, signY + 5, { align: 'center' });
-  doc.text(`UPTD Puskesmas`, leftSignX, signY + 9, { align: 'center' });
+  doc.text(appConfig?.jabatan_penanggung_jawab || `Ketua Tim Kesehatan Haji`, leftSignX, signY + 5, { align: 'center' });
+  doc.text(appConfig?.nama_instansi || `UPTD Puskesmas`, leftSignX, signY + 9, { align: 'center' });
 
   doc.text(`Makkah / Tempat, ${todayFormatted}`, rightSignX, signY, { align: 'center' });
   doc.text(`Bendahara Operasional Haji`, rightSignX, signY + 5, { align: 'center' });
@@ -284,11 +287,13 @@ export function generateFinancialPdfReport({
   doc.setFontSize(9.5);
   doc.setTextColor(15, 23, 42);
 
-  doc.text(`dr. H. Rahmat Hidayat, M.Kes`, leftSignX, signY + 34, { align: 'center' });
+  const pJawabName = appConfig?.penanggung_jawab || `dr. H. Rahmat Hidayat, M.Kes`;
+  doc.text(pJawabName, leftSignX, signY + 34, { align: 'center' });
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(8);
   doc.setTextColor(100, 116, 139);
-  doc.text(`NIP. 19780514 200501 1 008`, leftSignX, signY + 38, { align: 'center' });
+  const pJawabNip = appConfig?.nip_penanggung_jawab ? `NIP. ${appConfig.nip_penanggung_jawab}` : `NIP. 19780514 200501 1 008`;
+  doc.text(pJawabNip, leftSignX, signY + 38, { align: 'center' });
 
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(9.5);

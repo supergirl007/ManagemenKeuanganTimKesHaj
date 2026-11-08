@@ -4,6 +4,8 @@ import authRoutes from './routes/authRoutes.ts';
 import transactionRoutes from './routes/transactionRoutes.ts';
 import saldoRoutes from './routes/saldoRoutes.ts';
 import sheetsRoutes from './routes/sheetsRoutes.ts';
+import appRoutes from './routes/appRoutes.ts';
+import userRoutes from './routes/userRoutes.ts';
 
 dotenv.config();
 
@@ -47,5 +49,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/transactions', transactionRoutes);
 app.use('/api/saldo', saldoRoutes);
 app.use('/api/sheets', sheetsRoutes);
+app.use('/api/app', appRoutes);
+app.use('/api/users', userRoutes);
 
 export default app;

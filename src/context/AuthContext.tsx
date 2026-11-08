@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { AuthUser, UserRole } from '../types/index.ts';
-import { api, getStoredToken, getStoredUser, clearStoredAuth } from '../utils/api.ts';
+import { api, getStoredToken, getStoredUser, clearStoredAuth, getStoredActiveYear, setStoredActiveYear } from '../utils/api.ts';
 
 interface AuthContextType {
   user: AuthUser | null;
@@ -8,7 +8,9 @@ interface AuthContextType {
   isAdmin: boolean;
   isAnggota: boolean;
   isLoading: boolean;
-  login: (username: string, password: string) => Promise<void>;
+  activeYear: string;
+  setActiveYear: (year: string) => void;
+  login: (username: string, password: string, tahun?: string) => Promise<void>;
   logout: () => void;
   refreshUser: () => Promise<void>;
 }
@@ -17,7 +19,13 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<AuthUser | null>(getStoredUser());
+  const [activeYear, setActiveYearState] = useState<string>(getStoredActiveYear() || '2026');
   const [isLoading, setIsLoading] = useState<boolean>(true);
+
+  const setActiveYear = (year: string) => {
+    setActiveYearState(year);
+    setStoredActiveYear(year);
+  };
 
   useEffect(() => {
     const token = getStoredToken();
@@ -28,7 +36,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setUser(userData);
         })
         .catch(() => {
-          // Token expired or invalid
           clearStoredAuth();
           setUser(null);
         })
@@ -40,9 +47,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, []);
 
-  const login = async (username: string, password: string) => {
-    const res = await api.login(username, password);
+  const login = async (username: string, password: string, tahun?: string) => {
+    const res = await api.login(username, password, tahun);
     setUser(res.user);
+    if (res.tahun_aktif) {
+      setActiveYear(res.tahun_aktif);
+    }
   };
 
   const logout = () => {
@@ -71,6 +81,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         isAdmin,
         isAnggota,
         isLoading,
+        activeYear,
+        setActiveYear,
         login,
         logout,
         refreshUser,

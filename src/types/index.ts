@@ -1,4 +1,5 @@
 export type UserRole = 'admin' | 'anggota';
+export type UserStatus = 'aktif' | 'nonaktif';
 
 export interface User {
   id: string;
@@ -7,9 +8,20 @@ export interface User {
   role: UserRole;
   nama_lengkap: string;
   jabatan?: string;
+  status?: UserStatus;
+  created_at?: string;
 }
 
 export type AuthUser = Omit<User, 'password_hash'>;
+
+export interface AppConfig {
+  nama_instansi: string;
+  penanggung_jawab: string;
+  jabatan_penanggung_jawab: string;
+  nip_penanggung_jawab?: string;
+  tahun_aktif?: string;
+  updated_at?: string;
+}
 
 export interface SaldoRecord {
   id: string;
@@ -17,6 +29,8 @@ export interface SaldoRecord {
   saldo_awal_tahun_lalu: number;
   saldo_realtime: number;
   catatan?: string;
+  is_locked?: boolean;
+  saldo_akhir_sebelumnya?: number;
   updated_at?: string;
 }
 
@@ -33,6 +47,7 @@ export interface Transaction {
   kategori?: string; // Kategori pengeluaran/penerimaan
   dibuat_oleh?: string;
   created_at?: string;
+  tahun?: string; // e.g. "2026"
 }
 
 export interface FinancialSummary {
@@ -41,6 +56,17 @@ export interface FinancialSummary {
   totalPenerimaan: number;
   totalPengeluaran: number;
   tahun: string;
+}
+
+export interface YearInfo {
+  tahun: string;
+  saldoAwal: number;
+  totalPenerimaan: number;
+  totalPengeluaran: number;
+  saldoAkhir: number;
+  isLocked: boolean;
+  transactionCount: number;
+  catatan?: string;
 }
 
 export interface BudgetStatus {
@@ -79,6 +105,7 @@ export interface SheetsTestResult {
     users: boolean;
     saldo: boolean;
     transaksi: boolean;
+    pengaturan?: boolean;
   };
 }
 
@@ -107,12 +134,14 @@ export interface GoogleSheetsConfig {
     users: boolean;
     saldo: boolean;
     transaksi: boolean;
+    pengaturan?: boolean;
   };
 }
 
 export interface LoginResponse {
   token: string;
   user: AuthUser;
+  tahun_aktif?: string;
 }
 
 export interface ApiResponse<T = any> {

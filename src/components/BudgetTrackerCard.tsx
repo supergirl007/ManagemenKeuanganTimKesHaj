@@ -27,7 +27,7 @@ interface BudgetTrackerCardProps {
 }
 
 const STORAGE_KEY = 'haji_budget_limit';
-const DEFAULT_BUDGET_LIMIT = 15000000; // Rp 15.000.000 default
+const DEFAULT_BUDGET_LIMIT = 0; // Rp 0 default
 
 export const BudgetTrackerCard: React.FC<BudgetTrackerCardProps> = ({
   transactions,

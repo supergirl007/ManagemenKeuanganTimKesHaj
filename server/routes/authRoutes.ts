@@ -1,12 +1,12 @@
 import { Router, Request, Response } from 'express';
-import { getUsersFromStore } from '../googleSheets.ts';
+import { getUsersFromStore, getAppConfigFromStore } from '../googleSheets.ts';
 import { createToken, requireAuth, AuthenticatedRequest } from '../auth.ts';
 
 const router = Router();
 
 router.post('/login', async (req: Request, res: Response) => {
   try {
-    const { username, password } = req.body;
+    const { username, password, tahun } = req.body;
 
     if (!username || !password) {
       res.status(400).json({
@@ -31,12 +31,25 @@ router.post('/login', async (req: Request, res: Response) => {
       return;
     }
 
+    // Periksa status aktif/nonaktif akun
+    if (user.status === 'nonaktif') {
+      res.status(403).json({
+        success: false,
+        error: 'Akun Anda telah dinonaktifkan oleh Administrator. Hubungi admin untuk mengaktifkan kembali.',
+      });
+      return;
+    }
+
+    const appConfig = await getAppConfigFromStore();
+    const chosenYear = tahun || appConfig.tahun_aktif || '2026';
+
     const authUser = {
       id: user.id,
       username: user.username,
       role: user.role,
       nama_lengkap: user.nama_lengkap,
       jabatan: user.jabatan,
+      status: user.status || 'aktif',
     };
 
     const token = createToken(authUser);
@@ -47,6 +60,7 @@ router.post('/login', async (req: Request, res: Response) => {
       data: {
         token,
         user: authUser,
+        tahun_aktif: chosenYear,
       },
     });
   } catch (error: any) {
