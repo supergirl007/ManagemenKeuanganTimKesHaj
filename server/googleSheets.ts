@@ -865,7 +865,9 @@ export async function syncAllDatabasesWithSpreadsheet(): Promise<{
               trxItem.kategori = getTransactionCategory(trxItem);
               return trxItem;
             });
-          if (parsed.length > 0) memoryTransactions = parsed;
+          memoryTransactions = parsed;
+        } else {
+          memoryTransactions = [];
         }
       } catch (e) {
         console.warn('Sync Transaksi error:', e);

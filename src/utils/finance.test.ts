@@ -452,5 +452,48 @@ test('spreadsheet row parsing handles formatted rupiah and calculates balance ac
   assert.equal(summary.saldoRealtime, 23300000);
 });
 
+test('zero initial balance correctly reflects empty state and subsequent user inputs', () => {
+  // 1. Initial zero state
+  const emptySummary = calculateFinancialSummary(0, [], '2026');
+  assert.equal(emptySummary.saldoAwalTahunLalu, 0);
+  assert.equal(emptySummary.totalPenerimaan, 0);
+  assert.equal(emptySummary.totalPengeluaran, 0);
+  assert.equal(emptySummary.saldoRealtime, 0);
+
+  // 2. User inputs 1st income transaction: Rp 5.000.000
+  const userTrx1: Transaction = {
+    id: 'TRX-001',
+    tanggal: '2026-06-01',
+    jenis: 'penerimaan',
+    nominal: 5000000,
+    sumber_dana: 'Dana Hibah',
+    keterangan: 'Pencairan awal',
+    dibuat_oleh: 'Admin',
+    tahun: '2026',
+  };
+
+  const afterIncome = calculateFinancialSummary(0, [userTrx1], '2026');
+  assert.equal(afterIncome.totalPenerimaan, 5000000);
+  assert.equal(afterIncome.totalPengeluaran, 0);
+  assert.equal(afterIncome.saldoRealtime, 5000000);
+
+  // 3. User inputs 1st expense transaction: Rp 2.000.000
+  const userTrx2: Transaction = {
+    id: 'TRX-002',
+    tanggal: '2026-06-05',
+    jenis: 'pengeluaran',
+    nominal: 2000000,
+    nama_penerima: 'Apotek',
+    keterangan: 'Beli obat',
+    dibuat_oleh: 'Admin',
+    tahun: '2026',
+  };
+
+  const afterExpense = calculateFinancialSummary(0, [userTrx1, userTrx2], '2026');
+  assert.equal(afterExpense.totalPenerimaan, 5000000);
+  assert.equal(afterExpense.totalPengeluaran, 2000000);
+  assert.equal(afterExpense.saldoRealtime, 3000000);
+});
+
 
 

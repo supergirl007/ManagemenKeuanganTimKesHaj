@@ -40,8 +40,8 @@ function MainAppShell() {
   const [saldo, setSaldo] = useState<SaldoRecord>({
     id: `sld-${activeYear}`,
     tahun: activeYear,
-    saldo_awal_tahun_lalu: 12500000,
-    saldo_realtime: 12500000,
+    saldo_awal_tahun_lalu: 0,
+    saldo_realtime: 0,
   });
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [sheetConfig, setSheetConfig] = useState<GoogleSheetsConfig | null>(null);

@@ -208,9 +208,9 @@ export const GoogleSheetModal: React.FC<GoogleSheetModalProps> = ({
     } else if (sheetName === 'Users') {
       content = 'id,username,password_hash,role,nama_lengkap,jabatan,status,created_at\r\nusr-1,admin,admin123,admin,"dr. H. Rahmat Hidayat, M.Kes","Ketua Tim Haji",aktif,2026-01-01T00:00:00.000Z\r\nusr-2,petugas,petugas123,anggota,"Ns. Hj. Siti Nurjanah, S.Kep","Paramedis Kloter",aktif,2026-01-01T00:00:00.000Z';
     } else if (sheetName === 'Saldo') {
-      content = 'id,tahun,saldo_awal_tahun_lalu,saldo_realtime,catatan,is_locked,saldo_akhir_sebelumnya,updated_at\r\nsld-2025,2025,10000000,12500000,"Sisa kas operasional 2024",FALSE,0,2025-12-31T23:59:59.000Z\r\nsld-2026,2026,12500000,28200000,"Carryover saldo akhir 2025",TRUE,12500000,2026-05-01T00:00:00.000Z';
+      content = 'id,tahun,saldo_awal_tahun_lalu,saldo_realtime,catatan,is_locked,saldo_akhir_sebelumnya,updated_at\r\nsld-2026,2026,0,0,"Saldo awal tahun 2026",FALSE,,2026-01-01T00:00:00.000Z';
     } else if (sheetName === 'Transaksi') {
-      content = 'id,tanggal,jenis,nominal,sumber_dana,nama_penerima,keterangan,dibuat_oleh,tahun,created_at\r\nTRX-2026-001,2026-04-10,penerimaan,15000000,"Dana Operasional Dinkes",,"Pencairan Tahap 1 BOK Haji","Admin Petugas Haji",2026,2026-04-10T08:00:00.000Z\r\nTRX-2026-002,2026-04-18,pengeluaran,4200000,,"PT Kimia Farma Apotek","Pengadaan Obat Emergensi & Vitamin","Admin Petugas Haji",2026,2026-04-18T10:30:00.000Z';
+      content = 'id,tanggal,jenis,nominal,sumber_dana,nama_penerima,keterangan,dibuat_oleh,tahun,created_at';
     }
     const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
@@ -990,8 +990,7 @@ export const GoogleSheetModal: React.FC<GoogleSheetModalProps> = ({
                   Kolom: <code>id, tahun, saldo_awal_tahun_lalu, saldo_realtime, catatan, is_locked, saldo_akhir_sebelumnya, updated_at</code>
                 </p>
                 <div className="text-[10px] text-slate-400 bg-black/40 p-2 rounded-xl font-mono overflow-x-auto whitespace-pre">
-                  sld-2025 | 2025 | 10000000 | 12500000 | Sisa kas operasional 2024 | FALSE | 0{'\n'}
-                  sld-2026 | 2026 | 12500000 | 28200000 | Carryover saldo akhir 2025 | TRUE | 12500000
+                  sld-2026 | 2026 | 0 | 0 | Saldo kas awal tahun berjalan | FALSE |
                 </div>
               </div>
 
@@ -1028,7 +1027,7 @@ export const GoogleSheetModal: React.FC<GoogleSheetModalProps> = ({
                   Kolom: <code>id, tanggal, jenis, nominal, sumber_dana, nama_penerima, keterangan, dibuat_oleh, tahun, created_at</code>
                 </p>
                 <div className="text-[10px] text-slate-400 bg-black/40 p-2 rounded-xl font-mono overflow-x-auto whitespace-pre">
-                  TRX-2026-001 | 2026-04-10 | penerimaan | 15000000 | Dana BOK | | Pencairan Tahap 1 | Admin | 2026
+                  (Baris kosong - transaksi akan otomatis terisi saat dicatat di aplikasi)
                 </div>
               </div>
             </div>

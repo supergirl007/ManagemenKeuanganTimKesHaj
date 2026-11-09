@@ -9,7 +9,7 @@ export const LoginPage: React.FC = () => {
   const [username, setUsername] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [selectedYear, setSelectedYear] = useState<string>(activeYear || '2026');
-  const [availableYears, setAvailableYears] = useState<string[]>(['2026', '2025']);
+  const [availableYears, setAvailableYears] = useState<string[]>([activeYear || '2026']);
   const [isCustomYear, setIsCustomYear] = useState<boolean>(false);
   const [customYearInput, setCustomYearInput] = useState<string>('');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
